@@ -38,36 +38,42 @@ function TripsDashboard({ refreshKey }) {
   // GENERATE AI ITINERARY
   // =========================
 
-  const handleGenerate = async (id) => {
-    try {
-      setGeneratingId(id);
+     const handleGenerate = async (id) => {
+  try {
+    setGeneratingId(id);
 
-      const data = await apiRequest(
-        `/trips/${id}/generate-itinerary`,
-        {
-          method: "POST",
-        }
-      );
+    const data = await apiRequest(
+      `/trips/${id}/generate`,
+      {
+        method: "POST",
+      }
+    );
 
-      // Update only generated trip
-      setTrips((prevTrips) =>
-        prevTrips.map((trip) =>
-          trip._id === id
-            ? data.data
-            : trip
-        )
-      );
+    setTrips((prevTrips) =>
+      prevTrips.map((trip) =>
+        trip._id === id
+          ? data.data
+          : trip
+      )
+    );
 
-      alert(
-        "AI itinerary generated successfully!"
-      );
-    } catch (error) {
-      alert(error.message);
-    } finally {
-      setGeneratingId(null);
-    }
-  };
+    alert(
+      "AI itinerary generated successfully!"
+    );
+  } catch (error) {
+    console.error(
+      "Generate itinerary error:",
+      error
+    );
 
+    alert(
+      error.message ||
+        "Failed to generate itinerary"
+    );
+  } finally {
+    setGeneratingId(null);
+  }
+};
   // =========================
   // DELETE TRIP
   // =========================
