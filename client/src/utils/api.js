@@ -9,13 +9,17 @@ export const apiRequest = async (
 ) => {
 
   const token =
-    localStorage.getItem("token");
+    localStorage.getItem(
+      "token"
+    );
+
 
   const headers = {
     ...options.headers,
   };
 
 
+  // JSON request
   if (
     options.body &&
     !(
@@ -23,12 +27,12 @@ export const apiRequest = async (
       instanceof FormData
     )
   ) {
-    headers[
-      "Content-Type"
-    ] = "application/json";
+    headers["Content-Type"] =
+      "application/json";
   }
 
 
+  // JWT
   if (token) {
     headers.Authorization =
       `Bearer ${token}`;
@@ -45,14 +49,25 @@ export const apiRequest = async (
     );
 
 
-  const data =
-    await response.json();
+  let data;
+
+
+  try {
+    data =
+      await response.json();
+
+  } catch {
+    data = {
+      message:
+        "Invalid server response",
+    };
+  }
 
 
   if (!response.ok) {
     throw new Error(
       data.message ||
-      "Something went wrong"
+        "Something went wrong"
     );
   }
 
