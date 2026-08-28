@@ -1,9 +1,8 @@
 import ApiError from "../utils/ApiError.js";
 
 const allowedOrigins = [
-  process.env.CLIENT_URL,
+  process.env.CLIENT_URL?.trim(),
 
-  // Local React development
   ...(process.env.NODE_ENV !== "production"
     ? ["http://localhost:5173"]
     : []),
@@ -12,19 +11,19 @@ const allowedOrigins = [
 
 export const corsOptions = {
   origin: (origin, callback) => {
-
     console.log(
       "Request Origin:",
-      origin
+      JSON.stringify(origin)
     );
 
     console.log(
       "Allowed Origins:",
-      allowedOrigins
+      allowedOrigins.map(
+        (item) => JSON.stringify(item)
+      )
     );
 
 
-    // Postman, curl, server-to-server
     if (!origin) {
       return callback(
         null,
@@ -34,7 +33,9 @@ export const corsOptions = {
 
 
     if (
-      allowedOrigins.includes(origin)
+      allowedOrigins.includes(
+        origin.trim()
+      )
     ) {
       return callback(
         null,
@@ -85,7 +86,5 @@ export const corsOptions = {
 
   credentials: false,
 
-
-  // Successful preflight
   optionsSuccessStatus: 204,
 };
