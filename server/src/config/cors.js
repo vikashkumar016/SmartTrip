@@ -1,25 +1,30 @@
-import ApiError
-  from "../utils/ApiError.js";
-
+import ApiError from "../utils/ApiError.js";
 
 const allowedOrigins = [
   process.env.CLIENT_URL,
+
+  // Local React development
+  ...(process.env.NODE_ENV !== "production"
+    ? ["http://localhost:5173"]
+    : []),
 ].filter(Boolean);
 
 
 export const corsOptions = {
+  origin: (origin, callback) => {
 
-  origin: (
-    origin,
-    callback
-  ) => {
+    console.log(
+      "Request Origin:",
+      origin
+    );
 
-    /*
-      No Origin header:
-      Postman, curl, server-to-server,
-      tests etc.
-    */
+    console.log(
+      "Allowed Origins:",
+      allowedOrigins
+    );
 
+
+    // Postman, curl, server-to-server
     if (!origin) {
       return callback(
         null,
@@ -29,9 +34,7 @@ export const corsOptions = {
 
 
     if (
-      allowedOrigins.includes(
-        origin
-      )
+      allowedOrigins.includes(origin)
     ) {
       return callback(
         null,
@@ -40,10 +43,16 @@ export const corsOptions = {
     }
 
 
+    console.warn(
+      "CORS blocked origin:",
+      origin
+    );
+
+
     return callback(
       new ApiError(
         403,
-        "Origin not allowed by CORS"
+        `Origin not allowed by CORS: ${origin}`
       )
     );
   },
@@ -75,4 +84,8 @@ export const corsOptions = {
 
 
   credentials: false,
+
+
+  // Successful preflight
+  optionsSuccessStatus: 204,
 };
