@@ -25,7 +25,7 @@ function HomePage() {
 
         {/* Page Introduction */}
 
-        <section className="mb-10">
+        <section className="mb-8">
 
           <p className="text-sm font-semibold uppercase tracking-wider text-blue-600">
             AI-powered travel planning

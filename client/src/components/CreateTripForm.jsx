@@ -194,7 +194,7 @@ function CreateTripForm({ onTripCreated }) {
             Destination
           </label>
 
-          <p className="mt-1 text-sm text-slate-500">
+          <p className="mt-1 max-w-2xl text-sm text-slate-500">
             Where would you like to go?
           </p>
 
