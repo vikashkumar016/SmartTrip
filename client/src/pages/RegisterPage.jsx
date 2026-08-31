@@ -5,47 +5,48 @@ import {
   useNavigate,
 } from "react-router-dom";
 
+import AuthLayout from "../components/AuthLayout";
 import { useAuth } from "../context/AuthContext";
-
-import {
-  apiRequest,
-} from "../utils/api";
-
+import { apiRequest } from "../utils/api";
 
 function RegisterPage() {
   const navigate = useNavigate();
 
   const { loginUser } = useAuth();
 
+  const [formData, setFormData] = useState({
+    name: "",
+    email: "",
+    password: "",
+  });
 
-  const [formData, setFormData] =
-    useState({
-      name: "",
-      email: "",
-      password: "",
-    });
+  const [showPassword, setShowPassword] =
+    useState(false);
 
-
-  const [error, setError] =
-    useState("");
+  const [error, setError] = useState("");
 
   const [loading, setLoading] =
     useState(false);
 
+  const inputClass =
+    "mt-2 w-full rounded-xl border border-slate-300 bg-white px-4 py-3 text-slate-900 outline-none transition placeholder:text-slate-400 focus:border-blue-500 focus:ring-4 focus:ring-blue-100";
 
   // ====================================
-  // HANDLE INPUT CHANGE
+  // INPUT CHANGE
   // ====================================
 
   const handleChange = (e) => {
-    setFormData({
-      ...formData,
+    const { name, value } = e.target;
 
-      [e.target.name]:
-        e.target.value,
-    });
+    setFormData((prev) => ({
+      ...prev,
+      [name]: value,
+    }));
+
+    if (error) {
+      setError("");
+    }
   };
-
 
   // ====================================
   // REGISTER
@@ -58,152 +59,214 @@ function RegisterPage() {
       setLoading(true);
       setError("");
 
+      const data = await apiRequest(
+        "/auth/register",
+        {
+          method: "POST",
 
-      // apiRequest automatically uses:
-      // VITE_API_URL in production
-      // localhost fallback in development
+          body: JSON.stringify(
+            formData
+          ),
+        }
+      );
 
-      const data =
-        await apiRequest(
-          "/auth/register",
-          {
-            method: "POST",
-
-            body: JSON.stringify(
-              formData
-            ),
-          }
-        );
-
-
-      // Save user + JWT
+      // Registration response already
+      // contains user + JWT
       loginUser(
         data.user,
         data.token
       );
 
-
-      // Go to dashboard
-      navigate("/");
+      navigate("/", {
+        replace: true,
+      });
 
     } catch (error) {
-
       console.error(
         "Registration error:",
         error
       );
 
       setError(
-        error.message ||
-          "Registration failed"
+        "We couldn't create your account. Please check your details and try again."
       );
 
     } finally {
-
       setLoading(false);
     }
   };
 
-
   return (
-    <div className="flex min-h-screen items-center justify-center bg-slate-100 px-4">
+    <AuthLayout
+      eyebrow="Start your journey"
+      title="Create your account"
+      description="Create an account and start planning smarter trips with AI."
+    >
 
-      <div className="w-full max-w-md rounded-2xl bg-white p-8 shadow-xl">
+      <form
+        onSubmit={handleSubmit}
+        className="mt-8 space-y-5"
+      >
 
-        <h1 className="text-center text-3xl font-bold">
-          Create Account ✈️
-        </h1>
+        {/* NAME */}
 
+        <div>
 
-        <p className="mt-2 text-center text-slate-500">
-          Start planning smarter trips
-        </p>
-
-
-        <form
-          onSubmit={handleSubmit}
-          className="mt-8 space-y-5"
-        >
-
-          {/* NAME */}
+          <label
+            htmlFor="name"
+            className="text-sm font-semibold text-slate-800"
+          >
+            Name
+          </label>
 
           <input
+            id="name"
             type="text"
             name="name"
-            placeholder="Name"
+            autoComplete="name"
+            placeholder="Your name"
             value={formData.name}
             onChange={handleChange}
-            className="w-full rounded-lg border p-3"
+            className={inputClass}
             required
           />
 
+        </div>
 
-          {/* EMAIL */}
+
+        {/* EMAIL */}
+
+        <div>
+
+          <label
+            htmlFor="email"
+            className="text-sm font-semibold text-slate-800"
+          >
+            Email address
+          </label>
 
           <input
+            id="email"
             type="email"
             name="email"
-            placeholder="Email"
+            autoComplete="email"
+            placeholder="you@example.com"
             value={formData.email}
             onChange={handleChange}
-            className="w-full rounded-lg border p-3"
+            className={inputClass}
             required
           />
 
-
-          {/* PASSWORD */}
-
-          <input
-            type="password"
-            name="password"
-            placeholder="Password"
-            value={formData.password}
-            onChange={handleChange}
-            className="w-full rounded-lg border p-3"
-            minLength={6}
-            required
-          />
+        </div>
 
 
-          {/* ERROR */}
+        {/* PASSWORD */}
 
-          {error && (
-            <p className="text-sm text-red-500">
-              {error}
-            </p>
+        <div>
+
+          <div className="flex items-center justify-between">
+
+            <label
+              htmlFor="password"
+              className="text-sm font-semibold text-slate-800"
+            >
+              Password
+            </label>
+
+            <span className="text-xs text-slate-400">
+              Minimum 6 characters
+            </span>
+
+          </div>
+
+
+          <div className="relative">
+
+            <input
+              id="password"
+              type={
+                showPassword
+                  ? "text"
+                  : "password"
+              }
+              name="password"
+              autoComplete="new-password"
+              placeholder="Create a password"
+              value={formData.password}
+              onChange={handleChange}
+              className={`${inputClass} pr-20`}
+              minLength={6}
+              required
+            />
+
+            <button
+              type="button"
+              onClick={() =>
+                setShowPassword(
+                  (prev) => !prev
+                )
+              }
+              className="absolute right-3 top-1/2 mt-1 -translate-y-1/2 rounded-lg px-2 py-1 text-sm font-semibold text-slate-500 transition hover:bg-slate-100 hover:text-slate-900 focus:outline-none focus:ring-2 focus:ring-blue-500"
+            >
+              {showPassword
+                ? "Hide"
+                : "Show"}
+            </button>
+
+          </div>
+
+        </div>
+
+
+        {/* ERROR */}
+
+        {error && (
+          <div
+            role="alert"
+            className="rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm font-medium text-red-700"
+          >
+            {error}
+          </div>
+        )}
+
+
+        {/* REGISTER */}
+
+        <button
+          type="submit"
+          disabled={loading}
+          className="flex w-full items-center justify-center gap-2 rounded-xl bg-blue-600 px-5 py-3.5 font-semibold text-white shadow-sm transition hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-60"
+        >
+
+          {loading && (
+            <span
+              className="h-4 w-4 animate-spin rounded-full border-2 border-white/40 border-t-white"
+              aria-hidden="true"
+            />
           )}
 
+          {loading
+            ? "Creating your account..."
+            : "Create Account"}
 
-          {/* REGISTER BUTTON */}
+        </button>
 
-          <button
-            type="submit"
-            disabled={loading}
-            className="w-full rounded-lg bg-slate-900 p-3 font-semibold text-white disabled:cursor-not-allowed disabled:opacity-60"
-          >
-            {loading
-              ? "Creating account..."
-              : "Register"}
-          </button>
-
-        </form>
+      </form>
 
 
-        <p className="mt-6 text-center text-slate-500">
-          Already have an account?{" "}
+      <p className="mt-7 text-center text-sm text-slate-500">
+        Already have an account?{" "}
 
-          <Link
-            to="/login"
-            className="font-semibold text-slate-900"
-          >
-            Login
-          </Link>
-        </p>
+        <Link
+          to="/login"
+          className="font-semibold text-blue-600 transition hover:text-blue-700"
+        >
+          Sign in
+        </Link>
+      </p>
 
-      </div>
-    </div>
+    </AuthLayout>
   );
 }
-
 
 export default RegisterPage;
